@@ -1,6 +1,6 @@
 from app.models import Post
 from app.db import get_db
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session, redirect
 #Blueprint() lets us consolidate routes onto a single bp object that the parent app can register later
 #bp corresponds to using the Router middleware of Express.js
 bp = Blueprint('home', __name__, url_prefix='/')
@@ -14,12 +14,15 @@ def index():
   # use query() method on connection object to query the Post model for all posts in descending order, with results saved in posts variable
   return render_template(
   'homepage.html',
-  posts=posts
+  posts=posts,
+  loggedIn=session.get('loggedIn')
 ) # renders the template with posts data
 
 
 @bp.route('/login')
 def login():
+  if session.get('loggedIn') is None:
+    return render_template('login.html')
   return render_template('login.html')
 
 @bp.route('/post/<id>') #<id> represents the parameter from the URL
@@ -31,7 +34,8 @@ def single(id):
   # pass the single post object to single-psot.html template 
   return render_template(
     'single-post.html',
-    post=post
+    post=post,
+    loggedIn=session.get('loggedIn')
   )
   #once the template is rendered, and the response sent,
   #the context for this route terminates, and the teardown function closes the db connection 
